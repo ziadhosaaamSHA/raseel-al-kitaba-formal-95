@@ -21,7 +21,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Copy, Download, Send } from 'lucide-react';
+import { Copy, Download, MessageCircle, Send, X } from 'lucide-react';
+import LetterChat from '../components/LetterChat';
 
 const Generate = () => {
   const location = useLocation();
@@ -36,6 +37,7 @@ const Generate = () => {
   const [tone, setTone] = useState('standard');
   const [generatedLetter, setGeneratedLetter] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   const letterTypes = [
     { value: 'leave', label: 'طلب إجازة' },
@@ -108,12 +110,18 @@ ${sender}
       }
       
       setIsGenerating(false);
+      // Show chat automatically once the letter is generated
+      setShowChat(true);
     }, 2000);
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedLetter);
     // Here you would show a toast notification
+  };
+
+  const handleUpdateLetter = (newLetter: string) => {
+    setGeneratedLetter(newLetter);
   };
 
   return (
@@ -213,45 +221,71 @@ ${sender}
             </Card>
             
             {/* Result Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle>الرسالة المُنشأة</CardTitle>
-                <CardDescription>يمكنك تعديل النص أو نسخه أو تنزيله</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <Textarea 
-                  value={generatedLetter} 
-                  onChange={(e) => setGeneratedLetter(e.target.value)}
-                  placeholder="ستظهر هنا الرسالة المُنشأة بعد ملء النموذج والضغط على زر الإنشاء..."
-                  className="min-h-[300px] font-arabic leading-relaxed"
-                  readOnly={!generatedLetter}
-                />
-                
-                {generatedLetter && (
-                  <div className="flex flex-wrap gap-4">
-                    <Button 
-                      onClick={copyToClipboard}
-                      className="flex-1 flex items-center justify-center gap-2 bg-raseel-primary hover:bg-raseel-secondary"
-                    >
-                      <Copy size={18} />
-                      نسخ
-                    </Button>
-                    <Button 
-                      className="flex-1 flex items-center justify-center gap-2 bg-raseel-primary hover:bg-raseel-secondary"
-                    >
-                      <Download size={18} />
-                      تنزيل PDF
-                    </Button>
-                    <Button 
-                      className="flex-1 flex items-center justify-center gap-2 bg-raseel-primary hover:bg-raseel-secondary"
-                    >
-                      <Send size={18} />
-                      إرسال بالبريد
-                    </Button>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>الرسالة المُنشأة</CardTitle>
+                    <CardDescription>يمكنك تعديل النص أو نسخه أو تنزيله</CardDescription>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                  {generatedLetter && (
+                    <Button 
+                      onClick={() => setShowChat(!showChat)} 
+                      variant="outline" 
+                      size="icon"
+                      className="rounded-full"
+                    >
+                      {showChat ? <X size={18} /> : <MessageCircle size={18} />}
+                    </Button>
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <Textarea 
+                    value={generatedLetter} 
+                    onChange={(e) => setGeneratedLetter(e.target.value)}
+                    placeholder="ستظهر هنا الرسالة المُنشأة بعد ملء النموذج والضغط على زر الإنشاء..."
+                    className="min-h-[300px] font-arabic leading-relaxed"
+                    readOnly={!generatedLetter}
+                  />
+                  
+                  {generatedLetter && (
+                    <div className="flex flex-wrap gap-4">
+                      <Button 
+                        onClick={copyToClipboard}
+                        className="flex-1 flex items-center justify-center gap-2 bg-raseel-primary hover:bg-raseel-secondary"
+                      >
+                        <Copy size={18} />
+                        نسخ
+                      </Button>
+                      <Button 
+                        className="flex-1 flex items-center justify-center gap-2 bg-raseel-primary hover:bg-raseel-secondary"
+                      >
+                        <Download size={18} />
+                        تنزيل PDF
+                      </Button>
+                      <Button 
+                        className="flex-1 flex items-center justify-center gap-2 bg-raseel-primary hover:bg-raseel-secondary"
+                      >
+                        <Send size={18} />
+                        إرسال بالبريد
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              
+              {/* Chat Interface */}
+              {showChat && generatedLetter && (
+                <LetterChat 
+                  onUpdateLetter={handleUpdateLetter}
+                  letterType={letterType}
+                  sender={sender}
+                  recipient={recipient}
+                  reason={reason}
+                  tone={tone}
+                />
+              )}
+            </div>
           </div>
         </div>
       </main>
